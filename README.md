@@ -23,7 +23,7 @@ The following environment variable can be used to configure the exporter:
 ```shell
 export TAILSCALE_API_KEY="my-tailscale-api-key"
 export TAILSCALE_TAILNET="my-tailnet.github"
-docker run --rm -it -p 8080:8080 -e TAILSCALE_API_KEY -e TAILSCALE_TAILNET averagemarcus/tailscale-exporter:latest
+docker run --rm -it -p 8080:8080 -e TAILSCALE_API_KEY -e TAILSCALE_TAILNET ghcr.io/averagemarcus/tailscale-exporter:latest
 ```
 
 Then visit: [http://localhost:8080/metrics](http://localhost:8080/metrics)
@@ -76,7 +76,7 @@ spec:
     spec:
       containers:
       - name: tailscale-exporter
-        image: averagemarcus/tailscale-exporter:latest
+        image: ghcr.io/averagemarcus/tailscale-exporter:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
