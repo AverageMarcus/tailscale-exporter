@@ -37,6 +37,10 @@ func collectKeys(client *tailscale.Client) []prometheus.Collector {
 			if err != nil {
 				fmt.Println("Failed to get keys: ", err)
 			} else {
+				// Reset gauges so we don't leave old keys around
+				keyExpiry.Reset()
+				keySecondsRemaining.Reset()
+
 				for _, key := range keys {
 					remainingSeconds := time.Until(key.Expires).Seconds()
 					keyType := "auth_key"

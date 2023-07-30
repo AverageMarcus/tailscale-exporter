@@ -48,6 +48,11 @@ func collectDevices(client *tailscale.Client) []prometheus.Collector {
 			if err != nil {
 				fmt.Println("Failed to get devices: ", err)
 			} else {
+				// Reset gauges so we don't leave old devices around
+				deviceExpiry.Reset()
+				deviceSecondsRemaining.Reset()
+				deviceUpdateAvailable.Reset()
+
 				for _, device := range devices {
 					if !device.KeyExpiryDisabled {
 						remainingSeconds := time.Until(device.Expires.Time).Seconds()
