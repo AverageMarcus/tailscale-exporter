@@ -4,6 +4,7 @@ ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 ARG TARGETOS
 ARG TARGETARCH
+ARG VERSION="dev"
 
 RUN apk update && apk add -U --no-cache ca-certificates
 
@@ -12,7 +13,7 @@ ADD go.mod go.sum ./
 RUN go mod download
 ADD main.go .
 ADD pkg/ ./pkg
-RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags="-w -s" -o tailscale-exporter main.go
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags="-w -s -X 'main.Version=${VERSION}'" -o tailscale-exporter main.go
 
 FROM --platform=${TARGETPLATFORM:-linux/amd64} scratch
 WORKDIR /app/

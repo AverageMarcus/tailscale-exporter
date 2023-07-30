@@ -11,6 +11,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+var Version = "dev"
 var addr string
 
 func init() {
@@ -32,7 +33,7 @@ func main() {
 	metrics.Collect(client, reg)
 
 	http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
-	log.Printf("tailscale-exporter")
+	log.Printf("tailscale-exporter - %s", Version)
 	log.Printf("Listening on %s", addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
