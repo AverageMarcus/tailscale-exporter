@@ -31,6 +31,28 @@ func collectDevices(client *tailscale.Client) []prometheus.Collector {
 		[]string{"id", "created", "name"},
 	)
 
+	deviceLastSeen := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "tailscale_devices_last_seen",
+			Help: "The last time the device was active on the tailnet",
+			ConstLabels: prometheus.Labels{
+				"tailnet": client.GetTailnet(),
+			},
+		},
+		[]string{"id", "created", "name"},
+	)
+
+	deviceLastSeenAgo := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "tailscale_devices_last_seen_ago",
+			Help: "The number of seconds since the device was last active on the tailnet",
+			ConstLabels: prometheus.Labels{
+				"tailnet": client.GetTailnet(),
+			},
+		},
+		[]string{"id", "created", "name"},
+	)
+
 	deviceUpdateAvailable := prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "tailscale_devices_update_available",
@@ -51,6 +73,8 @@ func collectDevices(client *tailscale.Client) []prometheus.Collector {
 				// Reset gauges so we don't leave old devices around
 				deviceExpiry.Reset()
 				deviceSecondsRemaining.Reset()
+				deviceLastSeen.Reset()
+				deviceLastSeenAgo.Reset()
 				deviceUpdateAvailable.Reset()
 
 				for _, device := range devices {
@@ -60,6 +84,10 @@ func collectDevices(client *tailscale.Client) []prometheus.Collector {
 						deviceExpiry.With(prometheus.Labels{"id": device.ID, "created": device.Created.String(), "name": device.Name}).Set(float64(device.Expires.Unix()))
 						deviceSecondsRemaining.With(prometheus.Labels{"id": device.ID, "created": device.Created.String(), "name": device.Name}).Set(remainingSeconds)
 					}
+
+					secondsAgo := time.Since(device.LastSeen.Time).Seconds()
+					deviceLastSeen.With(prometheus.Labels{"id": device.ID, "created": device.Created.String(), "name": device.Name}).Set(float64(device.LastSeen.Unix()))
+					deviceLastSeenAgo.With(prometheus.Labels{"id": device.ID, "created": device.Created.String(), "name": device.Name}).Set(secondsAgo)
 
 					updateAvailable := 0.0
 					if device.UpdateAvailable {
@@ -73,5 +101,5 @@ func collectDevices(client *tailscale.Client) []prometheus.Collector {
 		}
 	}()
 
-	return []prometheus.Collector{deviceExpiry, deviceSecondsRemaining, deviceUpdateAvailable}
+	return []prometheus.Collector{deviceExpiry, deviceSecondsRemaining, deviceLastSeen, deviceLastSeenAgo, deviceUpdateAvailable}
 }
